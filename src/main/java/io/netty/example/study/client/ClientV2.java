@@ -7,6 +7,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.example.study.client.codec.*;
+import io.netty.example.study.client.handler.ClientIdleCheckHandler;
+import io.netty.example.study.client.handler.KeepaliveHandler;
 import io.netty.example.study.client.handler.dispatcher.OperationResultFuture;
 import io.netty.example.study.client.handler.dispatcher.RequestPendingCenter;
 import io.netty.example.study.client.handler.dispatcher.ResponseDispatcherHandler;
@@ -32,11 +34,15 @@ public class ClientV2 {
         bootstrap.group(group);
 
         RequestPendingCenter requestPendingCenter = new RequestPendingCenter();
+        KeepaliveHandler keepaliveHandler = new KeepaliveHandler();
 
         bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
+
+                pipeline.addLast(new ClientIdleCheckHandler());
+
                 pipeline.addLast(new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
 
@@ -48,6 +54,8 @@ public class ClientV2 {
                 pipeline.addLast(new OperationToRequestMessageEncoder());
 
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+
+                pipeline.addLast(keepaliveHandler);
             }
         });
 

@@ -14,6 +14,7 @@ import io.netty.example.study.server.codec.OrderFrameEncoder;
 import io.netty.example.study.server.codec.OrderProtocolDecoder;
 import io.netty.example.study.server.codec.OrderProtocolEncoder;
 import io.netty.example.study.server.handler.OrderServerProcessHandler;
+import io.netty.example.study.server.handler.ServerIdleCheckHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -38,6 +39,9 @@ public class Server {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
+
+                pipeline.addLast("idleHandler", new ServerIdleCheckHandler());
+
                 pipeline.addLast(new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
 
